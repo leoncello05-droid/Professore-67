@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classifica Artisti</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  min-height: 100vh;
+  padding: 0 1rem 4rem;
+}
+
+.wrap { max-width: 720px; margin: 0 auto; }
+
+/* ── Schermata iniziale ── */
+.intro-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 2rem;
+}
+.intro-screen.hidden { display: none; }
+
+.intro-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 0.3rem;
+}
+.intro-sub {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 2.5rem;
+}
+
+.intro-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 2.5rem;
+}
+
+.intro-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #888;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.intro-input {
+  width: 100%;
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #1a1a1a;
+  transition: border-color 0.15s;
+}
+.intro-input::placeholder { color: #ccc; }
+.intro-input:focus { outline: none; border-color: #f28c28; }
+
+.btn-go {
+  background: #f28c28;
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  padding: 14px 48px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #1a1a1a;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-go:hover { background: #e07b1a; }
+.btn-go:active { transform: scale(0.97); }
+
+/* ── Schermata principale ── */
+.main-screen { display: none; }
+.main-screen.active { display: block; }
+
+header { text-align: center; margin-bottom: 2rem; padding-top: 2rem; }
+header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+}
+header p {
+  font-size: 12px;
+  color: #888;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.event-info-bar {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 0.8rem;
+  flex-wrap: wrap;
+}
+.event-info-bar span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 5px 14px;
+}
+.event-info-bar .label { color: #999; font-weight: 500; border: none; background: none; padding: 5px 0; }
+
+.divider {
+  height: 2px;
+  background: #1a1a1a;
+  margin-bottom: 1.5rem;
+}
+
+/* Top bar */
+.top-bar { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+
+.btn-add {
+  display: flex; align-items: center; gap: 6px;
+  background: #f28c28;
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; color: #1a1a1a;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-add:hover { background: #e07b1a; }
+.btn-add:active { transform: scale(0.97); }
+.plus { font-size: 18px; line-height: 1; font-weight: 700; }
+
+/* Cards */
+#artistsList { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.2rem; }
+
+.artist-card {
+  background: #ffffff;
+  border: 2px solid #1a1a1a;
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: box-shadow 0.15s;
+}
+.artist-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
+.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.card-index { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.btn-remove {
+  background: none; border: 2px solid #1a1a1a; cursor: pointer;
+  color: #1a1a1a; font-size: 15px; line-height: 1; padding: 2px 8px;
+  border-radius: 6px; transition: all 0.15s; font-weight: 700;
+}
+.btn-remove:hover { background: #1a1a1a; color: #fff; }
+
+.card-body { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; align-items: start; }
+
+.field-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin-bottom: 5px; }
+
+.name-input {
+  width: 100%; background: #fafafa; border: 2px solid #1a1a1a;
+  border-radius: 8px; padding: 8px 10px;
+  font-family: 'Inter', sans-serif; font-size: 14px; color: #1a1a1a;
+  transition: border-color 0.15s;
+}
+.name-input::placeholder { color: #bbb; }
+.name-input:focus { outline: none; border-color: #f28c28; }
+
+.section-tag {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; margin-bottom: 5px; padding: 2px 8px; border-radius: 5px;
+  border: 2px solid #1a1a1a;
+}
+.section-tag.pt { background: #e8f5e9; color: #1a1a1a; }
+.section-tag.pa { background: #fff3e0; color: #1a1a1a; }
+
+.nums-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+
+.num-input {
+  width: 100%; background: #fafafa; border: 2px solid #1a1a1a;
+  border-radius: 8px; padding: 7px 4px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; text-align: center; color: #1a1a1a;
+  transition: border-color 0.15s;
+}
+.num-input::placeholder { color: #bbb; font-size: 10px; font-weight: 400; }
+.num-input:focus { outline: none; border-color: #f28c28; }
+.num-input-full { grid-column: 1 / -1; }
+
+/* Actions */
+.actions { display: flex; gap: 10px; margin-bottom: 2rem; }
+
+.btn-classifica {
+  flex: 1;
+  background: #f28c28;
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+  color: #1a1a1a; transition: background 0.15s, transform 0.1s;
+}
+.btn-classifica:hover { background: #e07b1a; }
+.btn-classifica:active { transform: scale(0.97); }
+
+.btn-pdf {
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer;
+  color: #1a1a1a; display: none; transition: all 0.15s;
+}
+.btn-pdf:hover { background: #f0f0f0; }
+
+/* Classifica */
+#classificaSection {
+  display: none; background: #ffffff; border: 2px solid #1a1a1a;
+  border-radius: 10px; overflow: hidden;
+}
+.class-header {
+  padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 2px solid #1a1a1a; background: #fafafa;
+}
+.class-header-title { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #1a1a1a; }
+.class-header small { font-size: 10px; color: #999; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.rank-list { padding: 4px 0; }
+
+.rank-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 18px; border-bottom: 1px solid #eee;
+  transition: background 0.1s; position: relative;
+}
+.rank-item:last-child { border-bottom: none; }
+.rank-item:hover { background: #fafafa; }
+.rank-item.top1 { background: #fffdf5; }
+.rank-item.top1::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:#f28c28; }
+.rank-item.top2::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:#aaa; }
+.rank-item.top3::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:#c97a3a; }
+
+.rank-pos { font-size: 18px; font-weight: 800; color: #bbb; min-width: 30px; text-align: center; }
+.rank-pos.p1 { color: #f28c28; }
+.rank-pos.p2 { color: #999; }
+.rank-pos.p3 { color: #c97a3a; }
+
+.rank-info { flex: 1; min-width: 0; }
+.rank-name { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px; }
+.rank-detail { font-size: 11px; color: #999; }
+.lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; }
+.lbl.ct { color: #2e7d32; }
+.lbl.cv { color: #e65100; }
+
+.rank-score { font-size: 20px; font-weight: 800; color: #555; min-width: 52px; text-align: right; }
+.rank-score.p1 { color: #f28c28; }
+.rank-score.p2 { color: #999; }
+
+@media (max-width: 560px) {
+  .card-body { grid-template-columns: 1fr; gap: 10px; }
+  .rank-item { gap: 10px; padding: 12px 14px; }
+  .event-info-bar { gap: 8px; }
+  .event-info-bar span { font-size: 11px; padding: 4px 10px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Schermata iniziale -->
+  <div class="intro-screen" id="introScreen">
+    <div class="intro-title">Classifica Artisti</div>
+    <div class="intro-sub">Sistema di punteggio</div>
+
+    <div class="intro-fields">
+      <div>
+        <div class="intro-label">Data</div>
+        <input class="intro-input" type="date" id="eventDate">
+      </div>
+      <div>
+        <div class="intro-label">Luogo</div>
+        <input class="intro-input" type="text" id="eventPlace" placeholder="Es: Palaghiaccio di Torino...">
+      </div>
+    </div>
+
+    <button class="btn-go" onclick="goToMain()">Classifica &#10142;</button>
+  </div>
+
+  <!-- Schermata principale -->
+  <div class="main-screen" id="mainScreen">
+
+    <header>
+      <h1>Classifica Artisti</h1>
+      <p>Sistema di punteggio</p>
+    </header>
+
+    <div class="event-info-bar" id="eventInfoBar">
+      <span class="label">Data:</span>
+      <span id="showDate">—</span>
+      <span class="label">Luogo:</span>
+      <span id="showPlace">—</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="top-bar">
+      <button class="btn-add" onclick="addArtist()">
+        <span class="plus">+</span> Aggiungi artista
+      </button>
+    </div>
+
+    <div id="artistsList"></div>
+
+    <div class="actions">
+      <button class="btn-classifica" onclick="showClassifica()">&#9653; Classifica</button>
+      <button class="btn-pdf" id="btnPdf" onclick="downloadPdf()">&#8659; Scarica PDF</button>
+    </div>
+
+    <div id="classificaSection">
+      <div class="class-header">
+        <span class="class-header-title">Classifica</span>
+        <small>pT + pA totale</small>
+      </div>
+      <div class="rank-list" id="rankList"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+let artists = [];
+let nextId = 1;
+let eventData = { date: '', place: '' };
+
+function parseNum(v) {
+  if (v === '' || v == null) return 0;
+  return parseFloat(String(v).trim().replace(',', '.')) || 0;
+}
+function fmt(v) {
+  const s = String(v == null ? '' : v).trim();
+  return s === '' ? '—' : s;
+}
+function sumArr(arr) { return arr.reduce((s, v) => s + parseNum(v), 0); }
+function fmtTotal(n) {
+  const r = Math.round(n * 100) / 100;
+  return r.toString().replace('.', ',');
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* Passa dalla schermata iniziale alla principale */
+function goToMain() {
+  eventData.date = document.getElementById('eventDate').value;
+  eventData.place = document.getElementById('eventPlace').value.trim();
+
+  /* Formatta data in italiano */
+  let dateText = '—';
+  if (eventData.date) {
+    const d = new Date(eventData.date + 'T00:00:00');
+    dateText = d.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+  document.getElementById('showDate').textContent = dateText;
+  document.getElementById('showPlace').textContent = eventData.place || '—';
+
+  document.getElementById('introScreen').classList.add('hidden');
+  document.getElementById('mainScreen').classList.add('active');
+}
+
+function addArtist() {
+  artists.push({ id: nextId++, nome: '', pT: ['','',''], pA: ['','',''] });
+  render();
+}
+function removeArtist(id) {
+  artists = artists.filter(a => a.id !== id);
+  render();
+}
+function updateField(id, field, val) { const a = artists.find(x => x.id === id); if(a) a[field] = val; }
+function updateNum(id, section, i, val) { const a = artists.find(x => x.id === id); if(a) a[section][i] = val; }
+
+function render() {
+  const list = document.getElementById('artistsList');
+  list.innerHTML = '';
+  artists.forEach((a, idx) => {
+    const card = document.createElement('div');
+    card.className = 'artist-card';
+    card.innerHTML = `
+      <div class="card-head">
+        <span class="card-index">Artista ${idx + 1}</span>
+        <button class="btn-remove" onclick="removeArtist(${a.id})">&#215;</button>
+      </div>
+      <div class="card-body">
+        <div>
+          <div class="field-label">Nome artista</div>
+          <input class="name-input" type="text" placeholder="Nome..." value="${escHtml(a.nome)}"
+            oninput="updateField(${a.id},'nome',this.value)" />
+        </div>
+        <div>
+          <div class="section-tag pt">pT</div>
+          <div class="nums-grid">
+            <input class="num-input" type="text" inputmode="decimal" placeholder="1°" value="${escHtml(a.pT[0])}"
+              oninput="updateNum(${a.id},'pT',0,this.value)" />
+            <input class="num-input" type="text" inputmode="decimal" placeholder="2°" value="${escHtml(a.pT[1])}"
+              oninput="updateNum(${a.id},'pT',1,this.value)" />
+            <input class="num-input num-input-full" type="text" inputmode="decimal" placeholder="3°" value="${escHtml(a.pT[2])}"
+              oninput="updateNum(${a.id},'pT',2,this.value)" />
+          </div>
+        </div>
+        <div>
+          <div class="section-tag pa">pA</div>
+          <div class="nums-grid">
+            <input class="num-input" type="text" inputmode="decimal" placeholder="1°" value="${escHtml(a.pA[0])}"
+              oninput="updateNum(${a.id},'pA',0,this.value)" />
+            <input class="num-input" type="text" inputmode="decimal" placeholder="2°" value="${escHtml(a.pA[1])}"
+              oninput="updateNum(${a.id},'pA',1,this.value)" />
+            <input class="num-input num-input-full" type="text" inputmode="decimal" placeholder="3°" value="${escHtml(a.pA[2])}"
+              oninput="updateNum(${a.id},'pA',2,this.value)" />
+          </div>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function showClassifica() {
+  const sorted = artists
+    .map(a => ({ nome: a.nome.trim() || '(senza nome)', pT:[...a.pT], pA:[...a.pA], total: sumArr(a.pT)+sumArr(a.pA) }))
+    .sort((a,b) => b.total - a.total);
+
+  const rankList = document.getElementById('rankList');
+  rankList.innerHTML = '';
+  sorted.forEach((a, i) => {
+    const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
+    const topClass = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const item = document.createElement('div');
+    item.className = `rank-item ${topClass}`;
+    item.innerHTML = `
+      <div class="rank-pos ${posClass}">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${escHtml(a.nome)}</div>
+        <div class="rank-detail">
+          <span class="lbl ct">pT</span> ${a.pT.map(fmt).join(' · ')}
+          &nbsp;&nbsp;
+          <span class="lbl cv">pA</span> ${a.pA.map(fmt).join(' · ')}
+        </div>
+      </div>
+      <div class="rank-score ${posClass}">${fmtTotal(a.total)}</div>
+    `;
+    rankList.appendChild(item);
+  });
+
+  const sec = document.getElementById('classificaSection');
+  sec.style.display = 'block';
+  document.getElementById('btnPdf').style.display = 'inline-block';
+  setTimeout(() => sec.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+}
+
+function downloadPdf() {
+  const sorted = artists
+    .map(a => ({ nome: a.nome.trim() || '(senza nome)', pT:[...a.pT], pA:[...a.pA], total: sumArr(a.pT)+sumArr(a.pA) }))
+    .sort((a,b) => b.total - a.total);
+
+  /* Formatta data per il PDF */
+  let dateText = '—';
+  if (eventData.date) {
+    const d = new Date(eventData.date + 'T00:00:00');
+    dateText = d.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+  const placeText = eventData.place || '—';
+
+  const blocks = sorted.map((a, i) => {
+    const lb = i===0 ? 'border-left:4px solid #f28c28;' : i===1 ? 'border-left:4px solid #aaa;' : i===2 ? 'border-left:4px solid #c97a3a;' : 'border-left:4px solid #ddd;';
+    const posCol = i===0 ? '#f28c28' : i===1 ? '#999' : i===2 ? '#c97a3a' : '#555';
+    const ptNums = a.pT.map((v,n) => `<span style="display:inline-block;margin-right:10px;font-size:13px;">${n+1}° <strong style="font-size:15px;color:#2e7d32;">${fmt(v)}</strong></span>`).join('');
+    const paNums = a.pA.map((v,n) => `<span style="display:inline-block;margin-right:10px;font-size:13px;">${n+1}° <strong style="font-size:15px;color:#e65100;">${fmt(v)}</strong></span>`).join('');
+    return `
+    <div style="${lb}border-radius:8px;margin-bottom:12px;padding:14px 18px;background:#fafafa;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:22px;font-weight:800;color:${posCol};min-width:30px;">${i+1}</span>
+          <span style="font-size:16px;font-weight:600;color:#1a1a1a;">${escHtml(a.nome)}</span>
+        </div>
+        <div style="font-size:24px;font-weight:800;color:${posCol};">${fmtTotal(a.total)}</div>
+      </div>
+      <div style="border-top:1px solid #eee;padding-top:8px;display:flex;gap:20px;">
+        <div><span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#2e7d32;margin-right:6px;">pT</span>${ptNums}</div>
+        <div><span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#e65100;margin-right:6px;">pA</span>${paNums}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8">
+<title>Classifica Artisti</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;padding:36px;}
+  h1{font-size:22px;font-weight:800;margin-bottom:4px;}
+  .event-line{font-size:13px;color:#555;font-weight:600;margin-bottom:4px;}
+  .sub{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #1a1a1a;}
+  @media print{body{padding:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style></head>
+<body>
+<h1>Classifica Artisti</h1>
+<div class="event-line">${escHtml(placeText)} &mdash; ${escHtml(dateText)}</div>
+<div class="sub">Sistema di punteggio</div>
+ ${blocks}
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const el = document.createElement('a');
+  el.href = url;
+  el.download = 'classifica_artisti.html';
+  el.click();
+  URL.revokeObjectURL(url);
+}
+
+addArtist();
+addArtist();
+addArtist();
+</script>
+</body>
+</html>
